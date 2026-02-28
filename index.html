@@ -66,14 +66,39 @@
 </div>
 
 <script>
-    // PASTE YOUR DISCORD WEBHOOK URL BELOW
-    const DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1477112433293398082/RW99FDKT6Te9K9knjTndJUFyfoaLb3EoWvBizpBm-mG6g1WYUn05VHN3tVK6WlwMdC7N";
+    const WEBHOOK_URL = "https://discord.com/api/webhooks/1477112433293398082/RW99FDKT6Te9K9knjTndJUFyfoaLb3EoWvBizpBm-mG6g1WYUn05VHN3tVK6WlwMdC7N";
+    const COOLDOWN_TIME = 10 * 60 * 1000; // 10 minutes in milliseconds
 
-    document.getElementById('appealForm').addEventListener('submit', async function(e) {
+    const form = document.getElementById('appealForm');
+    const btn = document.getElementById('submitBtn');
+    const status = document.getElementById('status');
+
+    // Function to check if the user is on cooldown when the page loads
+    function checkCooldown() {
+        const lastSubmit = localStorage.getItem('lastAppealTime');
+        if (lastSubmit) {
+            const timePassed = Date.now() - lastSubmit;
+            if (timePassed < COOLDOWN_TIME) {
+                const timeLeft = Math.ceil((COOLDOWN_TIME - timePassed) / 1000 / 60);
+                btn.disabled = true;
+                btn.style.background = "#555";
+                status.style.color = "#ffc107";
+                status.innerText = `Cooldown Active: Please wait ${timeLeft} more minutes.`;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Run check on page load
+    checkCooldown();
+
+    form.addEventListener('submit', async function(e) {
         e.preventDefault();
-        const btn = document.getElementById('submitBtn');
-        const status = document.getElementById('status');
-        
+
+        // Final check before sending
+        if (checkCooldown()) return;
+
         btn.disabled = true;
         btn.innerText = "Processing...";
 
@@ -82,42 +107,43 @@
                 title: "New Ban Appeal Submitted",
                 color: 16711807,
                 fields: [
-                    { name: "Discord Username", value: document.getElementById('discordUser').value, inline: true },
-                    { name: "Discord User ID", value: document.getElementById('discordID').value, inline: true },
-                    { name: "Roblox Username", value: document.getElementById('robloxUser').value, inline: true },
-                    { name: "Roblox User ID", value: document.getElementById('robloxID').value, inline: true },
-                    { name: "Reason for Ban", value: document.getElementById('banReason').value },
-                    { name: "Why unban?", value: document.getElementById('unbanWhy').value },
-                    { name: "What happened", value: document.getElementById('explanation').value },
-                    { name: "Understands Permanency", value: document.getElementById('permanentUnderstanding').value }
+                    { name: "Discord Username", value: document.getElementById('discordUser').value },
+                    { name: "Discord User ID", value: document.getElementById('discordID').value },
+                    { name: "Roblox Username", value: document.getElementById('robloxUser').value },
+                    { name: "Roblox User ID", value: document.getElementById('robloxID').value },
+                    { name: "Reason", value: document.getElementById('banReason').value },
+                    { name: "Why Unban?", value: document.getElementById('unbanWhy').value },
+                    { name: "What Happened", value: document.getElementById('explanation').value },
+                    { name: "Understands", value: document.getElementById('permanentUnderstanding').value }
                 ],
+                footer: { text: "Miami City RP | Anti-Spam Enabled" },
                 timestamp: new Date()
             }]
         };
 
         try {
-            const response = await fetch(DISCORD_WEBHOOK, {
+            const response = await fetch(WEBHOOK_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
 
             if (response.ok) {
+                // SUCCESS: Set the cooldown timestamp in the browser
+                localStorage.setItem('lastAppealTime', Date.now());
+                
                 status.style.color = "#00f2ff";
-                status.innerText = "Appeal submitted successfully.";
-                document.getElementById('appealForm').reset();
+                status.innerText = "Success! Appeal sent. You are now on a 10-minute cooldown.";
+                form.reset();
+                checkCooldown(); // Immediately lock the button
             } else {
                 throw new Error();
             }
         } catch (error) {
             status.style.color = "#ff4444";
             status.innerText = "Error sending appeal. Please try again.";
-        } finally {
             btn.disabled = false;
             btn.innerText = "Submit Appeal";
         }
     });
 </script>
-
-</body>
-</html>
