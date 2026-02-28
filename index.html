@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Miami City RP | Ban Appeal Form</title>
+    <style>
+        body { background-color: #050505; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; font-family: 'Arial', sans-serif; }
+        .form-container { background: #111; padding: 35px; border-radius: 8px; border: 1px solid #00f2ff; width: 100%; max-width: 600px; box-sizing: border-box; }
+        h1 { color: #ff007f; text-align: center; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 30px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .field-group { margin-bottom: 18px; }
+        label { display: block; color: #00f2ff; margin-bottom: 6px; font-size: 14px; font-weight: bold; }
+        input, textarea, select { width: 100%; padding: 12px; background: #1a1a1a; border: 1px solid #333; color: white; border-radius: 4px; box-sizing: border-box; font-size: 14px; }
+        input:focus, textarea:focus { border-color: #ff007f; outline: none; }
+        textarea { resize: vertical; min-height: 80px; }
+        button { width: 100%; padding: 15px; background: #ff007f; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.2s; text-transform: uppercase; margin-top: 10px; }
+        button:hover { background: #d6006b; }
+        button:disabled { background: #555; cursor: not-allowed; }
+        #status { margin-top: 15px; text-align: center; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    <h1>Ban Appeal Form</h1>
+    <form id="appealForm">
+        <div class="field-group">
+            <label>Discord Username</label>
+            <input type="text" id="discordUser" placeholder="username#0000" required>
+        </div>
+        <div class="field-group">
+            <label>Discord User ID</label>
+            <input type="text" id="discordID" placeholder="123456789012345678" required>
+        </div>
+        <div class="field-group">
+            <label>Roblox Username</label>
+            <input type="text" id="robloxUser" required>
+        </div>
+        <div class="field-group">
+            <label>Roblox User ID</label>
+            <input type="text" id="robloxID" required>
+        </div>
+        <div class="field-group">
+            <label>Reason for Ban</label>
+            <input type="text" id="banReason" required>
+        </div>
+        <div class="field-group">
+            <label>Why do you want to be unbanned?</label>
+            <textarea id="unbanWhy" required></textarea>
+        </div>
+        <div class="field-group">
+            <label>Explain what happened</label>
+            <textarea id="explanation" required></textarea>
+        </div>
+        <div class="field-group">
+            <label>Do you understand that this may be a permanent ban?</label>
+            <select id="permanentUnderstanding" required>
+                <option value="" disabled selected>Select an option</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+            </select>
+        </div>
+        <button type="submit" id="submitBtn">Submit Appeal</button>
+        <div id="status"></div>
+    </form>
+</div>
+
+<script>
+    // PASTE YOUR DISCORD WEBHOOK URL BELOW
+    const DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1477112433293398082/RW99FDKT6Te9K9knjTndJUFyfoaLb3EoWvBizpBm-mG6g1WYUn05VHN3tVK6WlwMdC7N";
+
+    document.getElementById('appealForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const btn = document.getElementById('submitBtn');
+        const status = document.getElementById('status');
+        
+        btn.disabled = true;
+        btn.innerText = "Processing...";
+
+        const payload = {
+            embeds: [{
+                title: "New Ban Appeal Submitted",
+                color: 16711807,
+                fields: [
+                    { name: "Discord Username", value: document.getElementById('discordUser').value, inline: true },
+                    { name: "Discord User ID", value: document.getElementById('discordID').value, inline: true },
+                    { name: "Roblox Username", value: document.getElementById('robloxUser').value, inline: true },
+                    { name: "Roblox User ID", value: document.getElementById('robloxID').value, inline: true },
+                    { name: "Reason for Ban", value: document.getElementById('banReason').value },
+                    { name: "Why unban?", value: document.getElementById('unbanWhy').value },
+                    { name: "What happened", value: document.getElementById('explanation').value },
+                    { name: "Understands Permanency", value: document.getElementById('permanentUnderstanding').value }
+                ],
+                timestamp: new Date()
+            }]
+        };
+
+        try {
+            const response = await fetch(DISCORD_WEBHOOK, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                status.style.color = "#00f2ff";
+                status.innerText = "Appeal submitted successfully.";
+                document.getElementById('appealForm').reset();
+            } else {
+                throw new Error();
+            }
+        } catch (error) {
+            status.style.color = "#ff4444";
+            status.innerText = "Error sending appeal. Please try again.";
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "Submit Appeal";
+        }
+    });
+</script>
+
+</body>
+</html>
